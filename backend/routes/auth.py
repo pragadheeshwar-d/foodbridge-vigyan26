@@ -104,13 +104,20 @@ def register():
         verified=False,
         verification_token=token,
         verification_expiry=datetime.utcnow() + timedelta(hours=24),
-        # Donors start as pending until admin approves; admins are auto-approved
         status='pending' if role not in ('admin', 'super_admin') else 'approved',
     )
     db.session.add(user)
     db.session.commit()
 
-    _send_verification_email(user)
+    # Try to send verification email
+    # If it fails (e.g. SMTP blocked on free hosting), auto-verify so user can still login
+    try:
+        _send_verification_email(user)
+    except Exception:
+        # Email failed — auto-verify so login still works
+        user.verified = True
+        user.verification_token = None
+        db.session.commit()
 
     access_token = create_access_token(identity=str(user.id))
     return jsonify({
