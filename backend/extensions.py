@@ -9,5 +9,5 @@ jwt = JWTManager()
 mail = Mail()
 cors = CORS()
 
-# gevent works on Python 3.14, eventlet does not
-socketio = SocketIO(cors_allowed_origins="*", async_mode='gevent')
+# eventlet works correctly on Python 3.11
+socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
