@@ -1,4 +1,3 @@
-import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_socketio import SocketIO
@@ -10,6 +9,5 @@ jwt = JWTManager()
 mail = Mail()
 cors = CORS()
 
-# Use eventlet in production for proper async/WebSocket support
-_async_mode = 'eventlet' if os.environ.get('FLASK_ENV') != 'development' else 'threading'
-socketio = SocketIO(cors_allowed_origins="*", async_mode=_async_mode)
+# gevent works on Python 3.14, eventlet does not
+socketio = SocketIO(cors_allowed_origins="*", async_mode='gevent')

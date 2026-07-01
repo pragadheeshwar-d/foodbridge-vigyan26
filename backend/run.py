@@ -1,10 +1,19 @@
 """
-Entry point for both local dev and production (Render/Heroku/Railway).
+Entry point for both local dev and production (Render).
 
 Local dev:   python run.py
-Production:  gunicorn --worker-class eventlet -w 1 run:app
+Production:  gunicorn --worker-class gevent -w 1 --bind 0.0.0.0:$PORT run:app
 """
 import os
+
+# Patch standard library for gevent in production
+if os.environ.get('FLASK_ENV') != 'development':
+    try:
+        from gevent import monkey
+        monkey.patch_all()
+    except ImportError:
+        pass
+
 from app import create_app
 from extensions import socketio
 
@@ -19,5 +28,4 @@ if __name__ == '__main__':
         port=port,
         debug=debug,
         use_reloader=False,
-        allow_unsafe_werkzeug=True,
     )
