@@ -43,17 +43,16 @@ export function DonorLoginPage() {
           try {
             const authUser = await login({ email, password })
             toast('Signed in successfully.', 'success')
-
-            // Always redirect based on the actual role returned from the server
             const destination = redirectParam || dashboardFor(authUser.role)
             navigate(destination, { replace: true })
           } catch (error: any) {
-            // Surface the server's error message clearly
-            const msg =
-              error?.response?.data?.message ||
-              error?.message ||
-              'Login failed. Please check your credentials.'
-            toast(msg, 'error')
+            const code = error?.response?.data?.code
+            const msg = error?.response?.data?.message || error?.message || 'Login failed.'
+            if (code === 'EMAIL_NOT_VERIFIED') {
+              toast('Please verify your email first. Check your inbox.', 'warning')
+            } else {
+              toast(msg, 'error')
+            }
           } finally {
             setLoading(false)
           }

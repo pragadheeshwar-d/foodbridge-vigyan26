@@ -181,11 +181,11 @@ def login():
     if not user or not _check(password, user.password):
         return jsonify({'message': 'Invalid email or password'}), 401
 
-    # if not user.verified:
-    #     return jsonify({
-    #         'message': 'Please verify your email before logging in.',
-    #         'code': 'EMAIL_NOT_VERIFIED'
-    #     }), 403
+    if not user.verified:
+        return jsonify({
+            'message': 'Please verify your email before logging in. Check your inbox for the verification link.',
+            'code': 'EMAIL_NOT_VERIFIED'
+        }), 403
 
     if user.status == 'suspended':
         return jsonify({'message': 'Your account has been suspended. Contact support.'}), 403

@@ -55,10 +55,10 @@ export function DonorSignupPage() {
         address: form.address,
         businessType: form.businessType,
       })
-      toast('Donor account created.', 'success')
-      navigate('/donor', { replace: true })
+      toast('Account created! Check your email to verify before logging in.', 'success')
+      navigate('/auth/login/donor', { replace: true })
     } catch (error: any) {
-      toast(error.message || 'Registration failed', 'error')
+      toast(error?.response?.data?.message || error.message || 'Registration failed', 'error')
     } finally {
       setLoading(false)
     }

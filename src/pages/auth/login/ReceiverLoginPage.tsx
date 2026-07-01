@@ -44,11 +44,13 @@ export function ReceiverLoginPage() {
             const destination = redirectParam || dashboardFor(authUser.role)
             navigate(destination, { replace: true })
           } catch (error: any) {
-            const msg =
-              error?.response?.data?.message ||
-              error?.message ||
-              'Login failed. Please check your credentials.'
-            toast(msg, 'error')
+            const code = error?.response?.data?.code
+            const msg = error?.response?.data?.message || error?.message || 'Login failed.'
+            if (code === 'EMAIL_NOT_VERIFIED') {
+              toast('Please verify your email first. Check your inbox.', 'warning')
+            } else {
+              toast(msg, 'error')
+            }
           } finally {
             setLoading(false)
           }

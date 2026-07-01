@@ -51,10 +51,10 @@ export function ReceiverSignupPage() {
         verificationId: form.verificationId,
         operatingHours: form.operatingHours,
       })
-      toast('Receiver account created.', 'success')
-      navigate('/receiver', { replace: true })
+      toast('Account created! Check your email to verify before logging in.', 'success')
+      navigate('/auth/login/receiver', { replace: true })
     } catch (error: any) {
-      toast(error.message || 'Registration failed', 'error')
+      toast(error?.response?.data?.message || error.message || 'Registration failed', 'error')
     } finally {
       setLoading(false)
     }
