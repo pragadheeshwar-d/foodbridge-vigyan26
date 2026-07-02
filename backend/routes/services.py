@@ -1,38 +1,14 @@
 """
-Miscellaneous services: QR, expiry prediction, certificates, admin user management.
+Miscellaneous services: QR, certificates, and admin user management.
 """
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
 from models import User, Donation, PickupRequest, Certificate
-from services.expiry_predictor import predict_expiry
 from services.qr_service import generate_qr_token, verify_qr_token
 
 services_bp = Blueprint('services', __name__)
-
-
-# ─── AI Expiry Prediction ─────────────────────────────────────────────────────
-
-@services_bp.route('/predict-expiry', methods=['POST'])
-@jwt_required()
-def predict_food_expiry():
-    data = request.get_json(force=True) or {}
-
-    food_type = data.get('food_type', 'Other')
-    preparation_time = data.get('preparation_time')
-    storage_type = data.get('storage_type', 'Room Temperature')
-    temperature = float(data.get('temperature', 25))
-    pickup_time = data.get('pickup_time')
-
-    if not preparation_time:
-        return jsonify({'message': 'preparation_time is required'}), 400
-
-    try:
-        result = predict_expiry(food_type, preparation_time, storage_type, temperature, pickup_time)
-        return jsonify(result), 200
-    except Exception as e:
-        return jsonify({'message': str(e)}), 400
 
 
 # ─── Certificates ─────────────────────────────────────────────────────────────

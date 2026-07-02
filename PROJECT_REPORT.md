@@ -5,7 +5,7 @@
 
 ## 1. Executive Summary
 
-**FoodBridge** is a full-stack web platform that bridges the gap between food donors (restaurants, hotels, households) and food receivers (NGOs, shelters, food banks) across Tamil Nadu. The platform uses AI-powered food expiry prediction, real-time Socket.IO notifications, QR-code verified pickups, and automated certificate generation to create a transparent, efficient, and scalable food redistribution network.
+**FoodBridge** is a full-stack web platform that bridges the gap between food donors (restaurants, hotels, households) and food receivers (NGOs, shelters, food banks) across Tamil Nadu. The platform uses real-time Socket.IO notifications, QR-code verified pickups, and automated certificate generation to create a transparent, efficient, and scalable food redistribution network.
 
 ---
 
@@ -22,7 +22,6 @@ Over 40% of food produced in India is wasted. Simultaneously, millions go hungry
 | Role-based auth (Donor / Receiver / Admin) | Flask-JWT + bcrypt | ✅ Live |
 | Email verification + password reset | Flask-Mail | ✅ Live |
 | Donation listing with image upload | Flask REST + Base64 | ✅ Live |
-| AI food expiry prediction | Rule-based ML (Python) | ✅ Live |
 | Real-time notifications | Flask-SocketIO | ✅ Live |
 | Live receiver dashboard updates | Socket.IO push | ✅ Live |
 | QR code generation + verification | qrcode + UUID tokens | ✅ Live |
@@ -111,10 +110,6 @@ Over 40% of food produced in India is wasted. Simultaneously, millions go hungry
 | longitude | FLOAT | GPS coordinate |
 | expiry_time | DATETIME | Hard deadline |
 | preparation_time | VARCHAR(50) | HH:MM when food was prepared |
-| freshness_score | INT | 0–100 AI score |
-| risk_level | VARCHAR(20) | Green / Yellow / Red |
-| predicted_expiry | DATETIME | AI predicted safe time |
-| ai_recommendation | TEXT | AI warning message |
 | status | VARCHAR(20) | Available / Requested / Approved / Completed / Expired |
 | created_at | DATETIME | Timestamp |
 
@@ -184,7 +179,7 @@ Over 40% of food produced in India is wasted. Simultaneously, millions go hungry
 |---|---|---|---|
 | GET | `/` | Optional | List all (filter: status, donor_id) |
 | GET | `/available` | No | Active non-expired donations |
-| POST | `/` | JWT Donor | Create with AI expiry prediction |
+| POST | `/` | JWT Donor | Create donation |
 | GET | `/:id` | No | Single donation |
 | PUT | `/:id` | JWT | Update status/details |
 | DELETE | `/:id` | JWT | Delete donation |
@@ -225,7 +220,6 @@ Over 40% of food produced in India is wasted. Simultaneously, millions go hungry
 ### Services (`/api/services`)
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/predict-expiry` | JWT | AI freshness prediction |
 | GET | `/certificates` | JWT | User's certificates |
 | GET | `/admin/users` | JWT Admin | All users (filter: role, status) |
 | PUT | `/admin/users/:id` | JWT Admin | Approve / suspend / change role |
@@ -258,40 +252,7 @@ Over 40% of food produced in India is wasted. Simultaneously, millions go hungry
 
 ---
 
-## 8. AI Food Expiry Prediction
-
-The prediction service uses a rule-based model with the following inputs:
-
-| Input | Example |
-|---|---|
-| Food type | Cooked Rice, Biryani, Salad |
-| Preparation time | 14:30 (HH:MM) |
-| Storage type | Room Temperature / Refrigerated / Frozen |
-| Ambient temperature | 28°C |
-| Expected pickup time | Optional ISO datetime |
-
-**Processing:**
-1. Base shelf life looked up from food-type table
-2. Multiplied by storage type coefficient (1.0× room temp → 3.0× refrigerated → 10.0× frozen)
-3. Further adjusted by temperature factor (0.2× at 50°C → 3.0× at ≤4°C)
-4. Freshness score (0–100) = `1 - (elapsed / shelf_life)`
-5. Risk level assigned: Green (≥70), Yellow (≥40), Red (<40)
-6. Warning issued if pickup time is after predicted expiry
-
-**Output:**
-```json
-{
-  "freshness_score": 82,
-  "predicted_expiry": "2026-07-01T20:30:00",
-  "risk_level": "Green",
-  "safe_hours_remaining": 5.4,
-  "recommendation": null
-}
-```
-
----
-
-## 9. QR Code Pickup Verification
+## 8. QR Code Pickup Verification
 
 1. Donor approves pickup request → `POST /api/pickups/:id/qr`
 2. Server generates UUID token, stores in `pickup_requests.qr_token`
@@ -312,7 +273,7 @@ Register → Email Verification → Admin Approval
         ↓
       Login → Role Redirect (donor/receiver/admin)
         ↓
-   DONOR: Add Donation (AI expiry runs automatically)
+   DONOR: Add Donation
         ↓
    Socket.IO broadcasts → All approved receivers notified
         ↓

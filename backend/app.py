@@ -46,6 +46,7 @@ def create_app(config_class=Config):
     from routes.auth import auth_bp
     from routes.donations import donations_bp
     from routes.pickups import pickups_bp
+    from routes.connections import connections_bp
     from routes.dashboard import dashboard_bp
     from routes.chat import chat_bp
     from routes.notifications import notifications_bp
@@ -54,6 +55,7 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp,          url_prefix='/api/auth')
     app.register_blueprint(donations_bp,     url_prefix='/api/donations')
     app.register_blueprint(pickups_bp,       url_prefix='/api/pickups')
+    app.register_blueprint(connections_bp,   url_prefix='/api/connections')
     app.register_blueprint(dashboard_bp,     url_prefix='/api/dashboard')
     app.register_blueprint(chat_bp,          url_prefix='/api/chat')
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from extensions import db
 from models import User, Donation, PickupRequest, Certificate, Notification
 
@@ -35,6 +36,79 @@ def _parse_qty(qty_str):
         return 1.0
 
 
+def _meals_from_donation(donation: Donation) -> int:
+    if donation.unit == 'kg':
+        return int((donation.quantity_number or _parse_qty(donation.quantity)) * 2)
+    return int(donation.quantity_number or _parse_qty(donation.quantity))
+
+
+def _kg_prevented_from_donation(donation: Donation) -> float:
+    qty = donation.quantity_number or _parse_qty(donation.quantity)
+    return qty * (0.5 if donation.unit == 'meals' else 1)
+
+
+def _city_from_address(address: str | None) -> str | None:
+    if not address:
+        return None
+    parts = [part.strip() for part in address.split(',') if part.strip()]
+    if not parts:
+        return None
+    if len(parts) == 1:
+        return parts[0]
+    last = parts[-1].lower()
+    if last in {'india', 'tamil nadu', 'tn'} and len(parts) > 1:
+        return parts[-2]
+    return parts[-1]
+
+
+@dashboard_bp.route('/public', methods=['GET'])
+def public_dashboard():
+    """Public homepage metrics derived from live database state."""
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    donations = Donation.query.all()
+    completed_donations = [d for d in donations if d.status == 'Completed']
+    available_donations = [d for d in donations if d.status == 'Available' and d.expiry_time > now]
+    completed_pickups = PickupRequest.query.filter_by(status='Completed').all()
+
+    meals_saved = sum(_meals_from_donation(d) for d in completed_donations)
+    food_waste_prevented = sum(_kg_prevented_from_donation(d) for d in completed_donations)
+
+    donor_orgs = {
+        d.organization.strip()
+        for d in User.query.filter_by(role='donor').all()
+        if d.organization and d.organization.strip()
+    }
+    receiver_orgs = {
+        u.organization.strip()
+        for u in User.query.filter_by(role='receiver').filter(User.organization.isnot(None)).all()
+        if u.organization and u.organization.strip()
+    }
+    cities = {
+        city
+        for city in (_city_from_address(u.address) for u in User.query.filter(User.address.isnot(None)).all())
+        if city
+    }
+
+    todays_donations = Donation.query.filter(Donation.created_at >= today_start).count()
+
+    return jsonify({
+        'stats': {
+            'meals_saved': meals_saved,
+            'active_donations': len(available_donations),
+            'daily_people_fed': meals_saved,
+            'food_waste_prevented': round(food_waste_prevented, 1),
+            'restaurants_connected': len(donor_orgs),
+            'ngos_connected': len(receiver_orgs),
+            'cities_covered': len(cities),
+            'successful_deliveries': len(completed_pickups),
+            'todays_donations': todays_donations,
+            'active_users': User.query.count(),
+        }
+    }), 200
+
+
 # ─── Donor Dashboard ──────────────────────────────────────────────────────────
 
 @dashboard_bp.route('/donor', methods=['GET'])
@@ -50,7 +124,7 @@ def donor_dashboard():
     ).count()
 
     # All donor donation IDs
-    donor_donations = Donation.query.filter_by(donor_id=user_id).all()
+    donor_donations = Donation.query.options(joinedload(Donation.donor)).filter_by(donor_id=user_id).all()
     donation_ids = [d.id for d in donor_donations]
 
     # Pending pickups
@@ -61,6 +135,12 @@ def donor_dashboard():
 
     # Completed donations
     completed_donations = [d for d in donor_donations if d.status == 'Completed']
+    expiring_soon = Donation.query.filter(
+        Donation.donor_id == user_id,
+        Donation.status.in_(['Available', 'Requested', 'Approved']),
+        Donation.expiry_time > datetime.utcnow(),
+        Donation.expiry_time <= datetime.utcnow() + timedelta(hours=2),
+    ).count()
 
     # Meals donated (estimate: quantity_number or parse from string)
     meals_donated = sum(
@@ -98,11 +178,20 @@ def donor_dashboard():
     food_categories = [{'name': ft[0], 'value': ft[1]} for ft in food_types]
 
     # Recent donations
-    recent = Donation.query.filter_by(donor_id=user_id).order_by(Donation.created_at.desc()).limit(10).all()
+    recent = (
+        Donation.query.options(joinedload(Donation.donor))
+        .filter_by(donor_id=user_id)
+        .order_by(Donation.created_at.desc())
+        .limit(10)
+        .all()
+    )
 
     # Recent pickup requests (for the donor's donations)
     recent_pickups = (
-        PickupRequest.query
+        PickupRequest.query.options(
+            joinedload(PickupRequest.donation).joinedload(Donation.donor),
+            joinedload(PickupRequest.receiver),
+        )
         .filter(PickupRequest.donation_id.in_(donation_ids))
         .order_by(PickupRequest.requested_at.desc())
         .limit(10)
@@ -123,6 +212,7 @@ def donor_dashboard():
             'carbon_reduced': carbon_reduced,
             'certificates': certificates,
             'total_donations': len(donor_donations),
+            'expiring_soon': expiring_soon,
         },
         'monthly_data': monthly_data,
         'food_categories': food_categories,
@@ -156,7 +246,10 @@ def receiver_dashboard():
         PickupRequest.approved_at >= today_start
     ).count()
 
-    completed_prs = PickupRequest.query.filter(
+    completed_prs = PickupRequest.query.options(
+        joinedload(PickupRequest.donation).joinedload(Donation.donor),
+        joinedload(PickupRequest.receiver),
+    ).filter(
         PickupRequest.receiver_id == user_id,
         PickupRequest.status == 'Completed'
     ).all()
@@ -188,7 +281,10 @@ def receiver_dashboard():
         monthly_data.append({'month': start.strftime('%b'), 'pickups': count})
 
     recent_prs = (
-        PickupRequest.query
+        PickupRequest.query.options(
+            joinedload(PickupRequest.donation).joinedload(Donation.donor),
+            joinedload(PickupRequest.receiver),
+        )
         .filter_by(receiver_id=user_id)
         .order_by(PickupRequest.requested_at.desc())
         .limit(10)
@@ -289,7 +385,7 @@ def admin_dashboard():
     if status_filter:
         users_q = users_q.filter_by(status=status_filter)
     recent_users = users_q.order_by(User.created_at.desc()).limit(50).all()
-    recent_donations = Donation.query.order_by(Donation.created_at.desc()).limit(20).all()
+    recent_donations = Donation.query.options(joinedload(Donation.donor)).order_by(Donation.created_at.desc()).limit(20).all()
 
     return jsonify({
         'stats': {

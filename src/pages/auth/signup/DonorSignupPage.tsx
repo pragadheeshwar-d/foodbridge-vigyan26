@@ -85,14 +85,14 @@ export function DonorSignupPage() {
         <Input label="Password" type="password" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} error={errors.password} icon={Lock} />
         <Input
           label="Address"
-          placeholder="Searchable address with geocoding/autocomplete compatibility"
+          placeholder="Enter the full pickup address with a clear landmark"
           value={form.address}
           onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
           error={errors.address}
           icon={MapPin}
         />
         <p className="text-xs text-text-secondary">
-          This field is ready for Google Maps autocomplete or geocoding integration later.
+          Use a precise address and landmark so the pickup team can locate you quickly.
         </p>
 
         <Button variant="primary" className="w-full" loading={loading} onClick={submit}>

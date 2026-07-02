@@ -38,6 +38,15 @@ function getCommunityRank(totalDonationEvents: number, totalMeals: number) {
   return { value: 'New', subtitle: 'Start your first donation' }
 }
 
+function getImpactScore(stats: { totalMeals: number; pendingPickups: number; certificates: number; totalDonationEvents: number }) {
+  const score =
+    Math.min(40, Math.round(stats.totalMeals / 10)) +
+    Math.min(25, stats.totalDonationEvents * 2) +
+    Math.min(20, stats.certificates * 5) +
+    Math.max(0, 15 - stats.pendingPickups * 3)
+  return Math.max(0, Math.min(100, score))
+}
+
 export function DashboardMetrics() {
   const { stats, loading } = useDonationStats()
   const communityRank = getCommunityRank(stats.totalDonationEvents, stats.totalMeals)
@@ -74,7 +83,7 @@ export function DashboardMetrics() {
       />
       <MetricCard
         title="Monthly Impact Score"
-        value={stats.totalMeals > 0 ? `94/100` : `0/100`}
+        value={`${getImpactScore(stats)}/100`}
         subtitle="Sustainability performance"
         icon={TrendingUp}
       />

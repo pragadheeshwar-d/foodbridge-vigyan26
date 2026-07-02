@@ -41,7 +41,7 @@ export function DonorLoginPage() {
           }
           setLoading(true)
           try {
-            const authUser = await login({ email, password })
+            const authUser = await login({ email, password, role: 'donor' })
             toast('Signed in successfully.', 'success')
             const destination = redirectParam || dashboardFor(authUser.role)
             navigate(destination, { replace: true })
@@ -50,6 +50,8 @@ export function DonorLoginPage() {
             const msg = error?.response?.data?.message || error?.message || 'Login failed.'
             if (code === 'EMAIL_NOT_VERIFIED') {
               toast('Please verify your email first. Check your inbox.', 'warning')
+            } else if (code === 'ROLE_MISMATCH') {
+              toast('This account belongs to a different portal. Please sign in through the correct role page.', 'warning')
             } else {
               toast(msg, 'error')
             }

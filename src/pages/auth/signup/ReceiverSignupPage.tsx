@@ -82,7 +82,7 @@ export function ReceiverSignupPage() {
         <Input label="Password" type="password" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} error={errors.password} icon={Lock} />
         <Input
           label="Delivery / Pickup Address"
-          placeholder="Compatible with maps autocomplete and geocoding"
+          placeholder="Enter the delivery or pickup address with landmarks"
           value={form.address}
           onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
           error={errors.address}

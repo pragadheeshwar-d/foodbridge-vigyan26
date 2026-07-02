@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.orm import joinedload
 from extensions import db, socketio
 from models import User, Donation, PickupRequest, Notification, Certificate
 from services.qr_service import generate_qr_token
@@ -52,7 +53,10 @@ def get_pickup_requests():
         requests_q = PickupRequest.query
 
     results = []
-    for pr in requests_q.order_by(PickupRequest.requested_at.desc()).all():
+    for pr in requests_q.options(
+        joinedload(PickupRequest.donation).joinedload(Donation.donor),
+        joinedload(PickupRequest.receiver),
+    ).order_by(PickupRequest.requested_at.desc()).all():
         pr_dict = pr.to_dict()
         pr_dict['donation'] = pr.donation.to_dict() if pr.donation else None
         results.append(pr_dict)
@@ -109,6 +113,7 @@ def create_pickup_request():
         'pickup_request': pr.to_dict(),
         'donation': donation.to_dict(),
     }, room=f'user_{donation.donor_id}')
+    _safe_emit('donation_updated', donation.to_dict(), namespace='/')
 
     db.session.commit()
     return jsonify({'message': 'Pickup request created', 'pickup_request': pr.to_dict()}), 201
@@ -178,6 +183,7 @@ def update_pickup_request(id):
             'pickup_request': pr.to_dict(),
             'donation': donation.to_dict(),
         }, room=f'user_{pr.receiver_id}')
+        _safe_emit('donation_updated', donation.to_dict(), namespace='/')
 
     elif new_status == 'Rejected':
         pr.status = 'Rejected'
@@ -202,6 +208,7 @@ def update_pickup_request(id):
             'pickup_request': pr.to_dict(),
             'donation': donation.to_dict(),
         }, room=f'user_{pr.receiver_id}')
+        _safe_emit('donation_updated', donation.to_dict(), namespace='/')
 
     elif new_status == 'Completed':
         pr.status = 'Completed'
@@ -244,6 +251,7 @@ def update_pickup_request(id):
             'pickup_request': pr.to_dict(),
             'donation': donation.to_dict(),
         })
+        _safe_emit('donation_updated', donation.to_dict(), namespace='/')
         _safe_emit('analytics_updated', {}, namespace='/')
 
     db.session.commit()
@@ -333,6 +341,7 @@ def verify_qr():
         'pickup_request': pr.to_dict(),
         'donation': donation.to_dict(),
     })
+    _safe_emit('donation_updated', donation.to_dict(), namespace='/')
 
     return jsonify({
         'valid': True,

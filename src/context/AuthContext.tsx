@@ -114,8 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: Boolean(user),
       isLoading,
 
-      login: async ({ email, password }) => {
-        const res = await api.post('/auth/login', { email, password })
+      login: async ({ email, password, role }) => {
+        const res = await api.post('/auth/login', { email, password, role })
         const { token, user: rawUser } = res.data
 
         localStorage.setItem('token', token)
@@ -141,15 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           operatingHours: input.operatingHours,
         }
         const res = await api.post('/auth/register', payload)
-        const { token, user: rawUser } = res.data
-
-        localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify(rawUser))
-
-        const authUser = mapUser(rawUser)
-        setUser(authUser)
-        connectSocket(authUser.id)
-        return authUser
+        const rawUser = res.data.user
+        return mapUser(rawUser)
       },
 
       logout: async () => {

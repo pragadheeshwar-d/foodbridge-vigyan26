@@ -114,15 +114,15 @@ def register():
     try:
         _send_verification_email(user)
     except Exception:
-        # Email failed — auto-verify so login still works
-        user.verified = True
-        user.verification_token = None
-        db.session.commit()
+        # Email failed on environments without SMTP; keep the account usable in dev.
+        if not current_app.config.get('MAIL_USERNAME'):
+            user.verified = True
+            user.verification_token = None
+            user.verification_expiry = None
+            db.session.commit()
 
-    access_token = create_access_token(identity=str(user.id))
     return jsonify({
         'message': 'Registration successful. Please check your email to verify your account.',
-        'token': access_token,
         'user': user.to_dict()
     }), 201
 
@@ -180,6 +180,7 @@ def login():
     data = request.get_json(force=True) or {}
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
+    requested_role = data.get('role')
 
     if not email or not password:
         return jsonify({'message': 'Email and password are required'}), 400
@@ -189,9 +190,16 @@ def login():
         return jsonify({'message': 'Invalid email or password'}), 401
 
     if not user.verified:
-        # Auto-verify since SMTP may be blocked on free hosting
-        user.verified = True
-        db.session.commit()
+        return jsonify({
+            'message': 'Please verify your email before signing in.',
+            'code': 'EMAIL_NOT_VERIFIED',
+        }), 403
+
+    if requested_role in ('donor', 'receiver') and user.role in ('donor', 'receiver') and user.role != requested_role:
+        return jsonify({
+            'message': 'Please sign in through the correct portal for your role.',
+            'code': 'ROLE_MISMATCH',
+        }), 403
 
     if user.status == 'suspended':
         return jsonify({'message': 'Your account has been suspended. Contact support.'}), 403

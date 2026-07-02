@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Upload, Clock, Image, X } from 'lucide-react'
+import { Upload, Image, X } from 'lucide-react'
 import { DashboardHeader } from '../../components/layout/DashboardLayout'
 import { Input, Select, Textarea } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
@@ -99,7 +99,7 @@ export default function AddDonationPage() {
     <DonorShell fab={false}>
       <DashboardHeader
         title="Add Donation"
-        subtitle={`List surplus food from ${user?.organization || 'your kitchen'}  AI will match nearby NGOs and predict safe expiry windows.`}
+        subtitle={`List surplus food from ${user?.organization || 'your kitchen'} and help nearby NGOs pick it up quickly.`}
       />
 
       <form onSubmit={handleSubmit} className="max-w-4xl">
@@ -198,17 +198,7 @@ export default function AddDonationPage() {
             Provide a complete pickup address and landmark so the team can confirm the location before collection.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Preferred Pickup Time" type="time" value={preferredPickupTime} onChange={(e) => setPreferredPickupTime(e.target.value)} />
-            <div className="flex items-end">
-              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 w-full">
-                <p className="text-xs text-primary font-medium flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> AI Expiry Prediction
-                </p>
-                <p className="text-sm font-semibold mt-1">Safe until 9:30 PM  Recommend listing at 8:45 PM</p>
-              </div>
-            </div>
-          </div>
+          <Input label="Preferred Pickup Time" type="time" value={preferredPickupTime} onChange={(e) => setPreferredPickupTime(e.target.value)} />
 
           <Textarea label="Special Instructions" placeholder="Allergens, halal/veg kitchen separation, loading bay Gate 3 access..." value={specialInstructions} onChange={(e) => setSpecialInstructions(e.target.value)} />
 

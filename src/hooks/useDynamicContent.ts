@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import {
-  type AchievementDefinition, type AiInsight, type CertificateRecord,
+  type AchievementDefinition, type InsightSummary, type CertificateRecord,
   type DonorActivityItem, type HistoryRecord, type LiveOpsMarker,
 } from '../lib/types'
 import { useDonationStats, useDonorDonations } from './useDonationStats'
@@ -165,7 +165,7 @@ function generateRecommendation(expiringSoon: number, pendingPickups: number): s
   return 'Log a new donation to receive personalized suggestions.'
 }
 
-function buildFallbackInsight(donorId: string, donations: { createdAt: Date; vegType?: string; category?: string }[], stats: { expiringSoon: number; pendingPickups: number }): AiInsight {
+function buildFallbackInsight(donorId: string, donations: { createdAt: Date; vegType?: string; category?: string }[], stats: { expiringSoon: number; pendingPickups: number }): InsightSummary {
   return {
     donorId,
     peakWindow: computePeakWindow(donations),
@@ -179,7 +179,7 @@ export function useDonorInsights() {
   const { user } = useAuth()
   const { stats } = useDonationStats()
   const { donations } = useDonorDonations()
-  const [insight, setInsight] = useState<AiInsight | null>(null)
+  const [insight, setInsight] = useState<InsightSummary | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export function useDonorInsights() {
     setLoading(false)
   }, [user?.id, donations, stats])
 
-  const computed: AiInsight = useMemo(() => {
+  const computed: InsightSummary = useMemo(() => {
     if (insight) return insight
     return buildFallbackInsight(user?.id ?? '', donations, {
       expiringSoon: stats.expiringSoon,

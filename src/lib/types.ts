@@ -61,7 +61,7 @@ export interface DonorActivityItem {
   [k: string]: unknown
 }
 
-export interface AiInsight {
+export interface InsightSummary {
   donorId: string
   peakWindow: string
   topCategory: string

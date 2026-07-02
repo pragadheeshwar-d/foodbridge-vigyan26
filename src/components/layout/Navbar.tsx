@@ -126,21 +126,38 @@ export function Navbar() {
             className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950"
           >
             <div className="px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="block text-sm font-medium py-2" onClick={() => setMobileOpen(false)}>
-                {link.label}
-              </a>
-            ))}
-            <div className="pt-2 space-y-2">
-              <Link to="/donor" className="block text-sm py-2">Donor Dashboard</Link>
-              <Link to="/receiver" className="block text-sm py-2">Receiver Dashboard</Link>
-              <Link to="/admin" className="block text-sm py-2">Admin Dashboard</Link>
-              <Link to="/auth/login/donor"><Button variant="secondary" className="w-full">Sign In</Button></Link>
-              <Link to="/auth/signup"><Button variant="primary" className="w-full">Create Account</Button></Link>
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="block text-sm font-medium py-2"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+
+              <div className="pt-2 space-y-2">
+                {user ? (
+                  <>
+                    <Link to="/dashboard" className="block text-sm py-2" onClick={() => setMobileOpen(false)}>
+                      Open Dashboard
+                    </Link>
+                    <Link to="/donor/add" className="block text-sm py-2" onClick={() => setMobileOpen(false)}>
+                      Create Donation
+                    </Link>
+                  </>
+                ) : null}
+                <Link to="/auth/login/donor" onClick={() => setMobileOpen(false)}>
+                  <Button variant="secondary" className="w-full">Sign In</Button>
+                </Link>
+                <Link to="/auth/signup" onClick={() => setMobileOpen(false)}>
+                  <Button variant="primary" className="w-full">Create Account</Button>
+                </Link>
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
       </AnimatePresence>
     </nav>
   )

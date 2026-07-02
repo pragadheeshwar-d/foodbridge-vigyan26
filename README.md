@@ -133,7 +133,6 @@ Frontend runs at: `http://localhost:5173`
 | GET | `/api/chat/conversations` | JWT | Chat partners |
 | GET | `/api/chat/messages/:partnerId` | JWT | Messages |
 | POST | `/api/chat/messages` | JWT | Send message |
-| POST | `/api/services/predict-expiry` | JWT | AI expiry prediction |
 | GET | `/api/services/certificates` | JWT | List certificates |
 | GET | `/api/services/admin/users` | JWT (admin) | All users |
 | PUT | `/api/services/admin/users/:id` | JWT (admin) | Approve/suspend user |

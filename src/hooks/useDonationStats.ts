@@ -24,7 +24,10 @@ export function useDonationStats() {
   const [loading, setLoading] = useState(true)
 
   const fetch = useCallback(async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
     try {
       const res = await api.get('/dashboard/donor')
       const s = res.data.stats
@@ -33,7 +36,7 @@ export function useDonationStats() {
         totalKg: s.food_waste_prevented ?? 0,
         todayDonations: s.todays_donations ?? 0,
         pendingPickups: s.pending_pickups ?? 0,
-        expiringSoon: 0,
+        expiringSoon: s.expiring_soon ?? 0,
         totalDonationEvents: s.total_donations ?? 0,
         foodWastePrevented: s.food_waste_prevented ?? 0,
         carbonReduced: s.carbon_reduced ?? 0,
@@ -50,14 +53,16 @@ export function useDonationStats() {
     fetch()
     const s = getSocket()
     const refresh = () => fetch()
-    s.on('pickup_status_changed', refresh)
-    s.on('analytics_updated', refresh)
-    s.on('new_donation', refresh)
-    return () => {
-      s.off('pickup_status_changed', refresh)
-      s.off('analytics_updated', refresh)
-      s.off('new_donation', refresh)
-    }
+      s.on('pickup_status_changed', refresh)
+      s.on('analytics_updated', refresh)
+      s.on('new_donation', refresh)
+      s.on('donation_updated', refresh)
+      return () => {
+        s.off('pickup_status_changed', refresh)
+        s.off('analytics_updated', refresh)
+        s.off('new_donation', refresh)
+        s.off('donation_updated', refresh)
+      }
   }, [fetch])
 
   return { stats, loading }

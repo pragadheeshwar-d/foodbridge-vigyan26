@@ -7,29 +7,17 @@ import {
 import { Navbar, Footer } from '../components/layout/Navbar'
 import { Button } from '../components/ui/Button'
 import { AnimatedCounter, FadeIn, StaggerContainer, staggerItem } from '../components/ui/AnimatedCounter'
-import { stats, howItWorks, networkStats, faqs } from '../data/mockData'
+import { howItWorks, faqs } from '../data/mockData'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { usePublicStats } from '../hooks/usePublicStats'
 
 const stepIcons = [UtensilsCrossed, Brain, Truck, QrCode, Heart]
-
-const statItems = [
-  { label: 'Meals Saved', value: stats.mealsSaved, icon: Heart, suffix: '+' },
-  { label: 'Active Donations', value: stats.activeDonations, icon: UtensilsCrossed },
-  { label: 'Daily Avg. People Fed', value: stats.dailyPeopleFed, icon: Users, suffix: '+' },
-  { label: 'Food Waste Prevented', value: stats.foodWastePrevented, icon: Scale, suffix: ' tons' },
-]
-
-const networkItems = [
-  { label: 'Restaurants Connected', value: networkStats.restaurantsConnected, icon: Store, suffix: '+' },
-  { label: ' NGOs Connected', value: networkStats.ngosConnected, icon: Handshake, suffix: '+' },
-  { label: ' Cities Covered', value: networkStats.citiesCovered, icon: MapPin, suffix: '+' },
-  { label: 'Successful Deliveries', value: networkStats.successfulDeliveries, icon: PackageCheck, suffix: '+' },
-]
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const { user } = useAuth()
+  const { stats, loading } = usePublicStats()
 
   if (user) {
     return <Navigate to="/dashboard" replace />
@@ -59,7 +47,7 @@ export default function LandingPage() {
                 <span className="gradient-text">Feed More Lives.</span>
               </h1>
               <p className="mt-6 text-lg text-text-secondary max-w-lg leading-relaxed">
-                Food Bridge is a B2B platform connecting surplus food from hotels and caterers directly to verified NGOs and shelters. AI-powered matching ensures surplus food reaches those who need it most.
+                Food Bridge is a B2B platform connecting surplus food from hotels and caterers directly to verified NGOs and shelters. Live coordination helps surplus food reach those who need it most.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link to="/donor/add">
@@ -91,7 +79,12 @@ export default function LandingPage() {
                     />
                   ))}
                 </div>
-                <span><strong className="text-text dark:text-white">8,500+</strong> active users across TN</span>
+                <span>
+                  <strong className="text-text dark:text-white">
+                    {loading ? '...' : stats.activeUsers.toLocaleString()}
+                  </strong>{' '}
+                  active users across TN
+                </span>
               </div>
             </FadeIn>
 
@@ -117,7 +110,7 @@ export default function LandingPage() {
                     <div>
                       <p className="text-sm font-bold text-text dark:text-gray-100">Live Impact</p>
                       <p className="text-2xl font-extrabold text-primary">
-                        <AnimatedCounter value={2847563} suffix=" meals saved" />
+                        <AnimatedCounter value={stats.mealsSaved} suffix=" meals saved" />
                       </p>
                     </div>
                   </motion.div>
@@ -134,7 +127,7 @@ export default function LandingPage() {
           <FadeIn className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold">How It Works</h2>
             <p className="text-text-secondary mt-3 max-w-2xl mx-auto">
-              From donation to distribution in five seamless steps  powered by AI
+              From donation to distribution in five seamless steps with simple, reliable coordination
             </p>
           </FadeIn>
 
@@ -178,15 +171,34 @@ export default function LandingPage() {
             </p>
           </FadeIn>
           <StaggerContainer className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {statItems.map((item) => (
-              <motion.div key={item.label} variants={staggerItem} className="stat-card text-center">
-                <item.icon className="w-6 h-6 text-primary mx-auto mb-3" />
-                <p className="stat-value">
-                  <AnimatedCounter value={item.value} suffix={item.suffix || ''} />
-                </p>
-                <p className="text-xs text-text-secondary mt-1 font-medium">{item.label}</p>
-              </motion.div>
-            ))}
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <Heart className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.mealsSaved} suffix="+" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Meals Saved</p>
+            </motion.div>
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <UtensilsCrossed className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.activeDonations} />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Active Donations</p>
+            </motion.div>
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <Users className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.dailyPeopleFed} suffix="+" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Daily Avg. People Fed</p>
+            </motion.div>
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <Scale className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.foodWastePrevented} suffix=" tons" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Food Waste Prevented</p>
+            </motion.div>
           </StaggerContainer>
         </div>
       </section>
@@ -201,15 +213,34 @@ export default function LandingPage() {
             </p>
           </FadeIn>
           <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {networkItems.map((item) => (
-              <motion.div key={item.label} variants={staggerItem} className="stat-card text-center">
-                <item.icon className="w-6 h-6 text-primary mx-auto mb-3" />
-                <p className="stat-value">
-                  <AnimatedCounter value={item.value} suffix={item.suffix || ''} />
-                </p>
-                <p className="text-xs text-text-secondary mt-1 font-medium">{item.label}</p>
-              </motion.div>
-            ))}
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <Store className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.restaurantsConnected} suffix="+" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Restaurants Connected</p>
+            </motion.div>
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <Handshake className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.ngosConnected} suffix="+" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">NGOs Connected</p>
+            </motion.div>
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <MapPin className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.citiesCovered} suffix="+" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Cities Covered</p>
+            </motion.div>
+            <motion.div variants={staggerItem} className="stat-card text-center">
+              <PackageCheck className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="stat-value">
+                <AnimatedCounter value={loading ? 0 : stats.successfulDeliveries} suffix="+" />
+              </p>
+              <p className="text-xs text-text-secondary mt-1 font-medium">Successful Deliveries</p>
+            </motion.div>
           </StaggerContainer>
         </div>
       </section>

@@ -27,7 +27,7 @@ export const networkStats = {
 
 export const howItWorks = [
   { step: 1, title: 'Donate Food', description: 'Restaurants, hotels & households across Tamil Nadu list surplus food', icon: 'UtensilsCrossed' },
-  { step: 2, title: 'AI Matching', description: 'Smart algorithm matches food with nearby NGOs in your district instantly', icon: 'Brain' },
+  { step: 2, title: 'Smart Matching', description: 'Smart algorithm matches food with nearby NGOs in your district instantly', icon: 'Brain' },
   { step: 3, title: 'Pickup Request', description: 'Volunteers or NGOs request pickup with one tap', icon: 'Truck' },
   { step: 4, title: 'QR Verification', description: 'Secure QR codes verify pickup and delivery across TN', icon: 'QrCode' },
   { step: 5, title: 'Distribution', description: 'Food reaches shelters & communities — impact tracked live statewide', icon: 'Heart' },
@@ -85,7 +85,7 @@ export const testimonials = [
     name: 'Lakshmi Venkatesan',
     role: 'Director, Udhavum Ullangal, Chennai',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-    quote: 'Food Bridge transformed how we receive donations across Chennai. The AI matching saves us hours every day.',
+    quote: 'Food Bridge transformed how we receive donations across Chennai. The live matching saves us hours every day.',
   },
   {
     name: 'Karthikeyan Raman',
@@ -104,7 +104,7 @@ export const testimonials = [
 export const faqs = [
   {
     q: 'How does Food Bridge work?',
-    a: 'Donors across Tamil Nadu list surplus food, our AI matches it with nearby NGOs, volunteers pick up and deliver with QR verification — all tracked in real-time.',
+    a: 'Donors across Tamil Nadu list surplus food, nearby NGOs request what they need, volunteers pick up and deliver with QR verification — all tracked in real-time.',
   },
   {
     q: 'Which cities in Tamil Nadu does Food Bridge cover?',
@@ -199,7 +199,7 @@ export const pickupRequests = [
 
 export const notifications = [
   { id: '1', title: 'Pickup confirmed', message: 'Akshaya Patra Chennai will pick up Vegetable Meals at 7:00 PM', time: '5 min ago', read: false },
-  { id: '2', title: 'New match found', message: 'AI matched your Fruit Salad with 3 nearby NGOs in Chennai', time: '12 min ago', read: false },
+  { id: '2', title: 'New match found', message: 'Your Fruit Salad has been matched with 3 nearby NGOs in Chennai', time: '12 min ago', read: false },
   { id: '3', title: 'Certificate ready', message: 'Your June donation certificate is available', time: '1 hr ago', read: true },
   { id: '4', title: 'Achievement unlocked', message: 'You earned the Eco Warrior badge!', time: '2 hrs ago', read: true },
 ]

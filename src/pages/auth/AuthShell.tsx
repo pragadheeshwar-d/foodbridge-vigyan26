@@ -53,7 +53,7 @@ export function AuthShell({
               </div>
             </div>
             <div className="relative grid gap-3">
-              {[
+              {[ 
                 'Secure JWT sessions and role-based access',
                 'Donation tracking with QR verification',
                 'Simple address capture with no map integration',

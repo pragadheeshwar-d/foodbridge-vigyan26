@@ -27,10 +27,6 @@ export interface DonationRecord {
   latitude?: number
   longitude?: number
   status?: string
-  freshness_score?: number
-  risk_level?: string
-  ai_recommendation?: string
-  predicted_expiry?: string
   created_at?: string
 }
 
@@ -102,15 +98,4 @@ export async function updateDonation(
 
 export async function deleteDonation(id: string | number): Promise<void> {
   await api.delete(`/donations/${id}`)
-}
-
-export async function predictExpiry(input: {
-  food_type: string
-  preparation_time: string
-  storage_type?: string
-  temperature?: number
-  pickup_time?: string
-}) {
-  const res = await api.post('/services/predict-expiry', input)
-  return res.data
 }

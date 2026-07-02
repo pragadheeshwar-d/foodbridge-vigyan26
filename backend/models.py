@@ -93,7 +93,7 @@ class Donation(db.Model):
     preparation_time = db.Column(db.String(50), nullable=True)
     preferred_pickup_time = db.Column(db.String(50), nullable=True)
 
-    # AI Expiry fields
+    # Legacy expiry-analysis fields retained for backward compatibility with older records
     predicted_expiry = db.Column(db.DateTime, nullable=True)
     freshness_score = db.Column(db.Integer, nullable=True)
     risk_level = db.Column(db.String(20), nullable=True)    # Green | Yellow | Red
@@ -131,10 +131,6 @@ class Donation(db.Model):
             'expiry_time': self.expiry_time.isoformat() if self.expiry_time else None,
             'preparation_time': self.preparation_time,
             'preferred_pickup_time': self.preferred_pickup_time,
-            'predicted_expiry': self.predicted_expiry.isoformat() if self.predicted_expiry else None,
-            'freshness_score': self.freshness_score,
-            'risk_level': self.risk_level,
-            'ai_recommendation': self.ai_recommendation,
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }

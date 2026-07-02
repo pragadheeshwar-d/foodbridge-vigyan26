@@ -10,7 +10,8 @@ let socket: Socket | null = null
 export function getSocket(): Socket {
   if (!socket) {
     const token = localStorage.getItem('token') ?? undefined
-    socket = io(BASE_URL, {
+    const socketBaseUrl = BASE_URL || window.location.origin
+    socket = io(socketBaseUrl, {
       auth: { token },
       transports: ['websocket', 'polling'],
       autoConnect: false,

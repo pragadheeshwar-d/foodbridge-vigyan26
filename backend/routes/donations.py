@@ -4,9 +4,9 @@ Donation management routes.
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
+from sqlalchemy.orm import joinedload
 from extensions import db, socketio
 from models import User, Donation, Notification
-from services.expiry_predictor import predict_expiry
 
 donations_bp = Blueprint('donations', __name__)
 
@@ -68,7 +68,7 @@ def get_donations():
     if donor_id:
         q = q.filter_by(donor_id=donor_id)
 
-    donations = q.order_by(Donation.created_at.desc()).all()
+    donations = q.options(joinedload(Donation.donor)).order_by(Donation.created_at.desc()).all()
     return jsonify([d.to_dict() for d in donations]), 200
 
 
@@ -78,6 +78,7 @@ def get_available_donations():
     now = datetime.utcnow()
     donations = (
         Donation.query
+        .options(joinedload(Donation.donor))
         .filter(Donation.status == 'Available', Donation.expiry_time > now)
         .order_by(Donation.expiry_time.asc())
         .all()
@@ -123,42 +124,7 @@ def create_donation():
         unit = data.get('unit')
         quantity_str = quantity_raw
 
-    # AI expiry prediction
-    freshness_score = None
-    risk_level = None
-    predicted_expiry_dt = None
-    ai_recommendation = None
-
     prep_time_str = data.get('preparation_time') or data.get('preparationTime')
-    if prep_time_str and data.get('food_type'):
-        try:
-            # Build an ISO datetime from HH:MM time string
-            today = datetime.utcnow().date()
-            prep_full = f"{today}T{prep_time_str}:00"
-            storage = data.get('storage_type', 'Room Temperature')
-            temperature = float(data.get('temperature', 25))
-
-            prediction = predict_expiry(
-                food_type=data['food_type'],
-                preparation_time=prep_full,
-                storage_type=storage,
-                temperature=temperature,
-                pickup_time=pickup_time.isoformat() if pickup_time else None
-            )
-            freshness_score = prediction['freshness_score']
-            risk_level = prediction['risk_level']
-            ai_recommendation = prediction.get('recommendation')
-            if prediction.get('predicted_expiry'):
-                predicted_expiry_dt = datetime.fromisoformat(
-                    prediction['predicted_expiry'].replace('Z', '+00:00')
-                )
-        except Exception as e:
-            # Fallback defaults
-            freshness_score = 90
-            risk_level = 'Green'
-    else:
-        freshness_score = 90
-        risk_level = 'Green'
 
     donation = Donation(
         donor_id=int(user_id),
@@ -179,10 +145,6 @@ def create_donation():
         expiry_time=expiry_time,
         preparation_time=prep_time_str,
         preferred_pickup_time=data.get('preferredPickupTime') or data.get('preferred_pickup_time'),
-        freshness_score=freshness_score,
-        risk_level=risk_level,
-        predicted_expiry=predicted_expiry_dt,
-        ai_recommendation=ai_recommendation,
         status='Available',
     )
     db.session.add(donation)
