@@ -8,6 +8,4 @@ db = SQLAlchemy()
 jwt = JWTManager()
 mail = Mail()
 cors = CORS()
-
-# eventlet works correctly on Python 3.11
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(cors_allowed_origins="*")
