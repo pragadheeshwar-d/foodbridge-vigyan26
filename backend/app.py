@@ -80,30 +80,4 @@ def create_app(config_class=Config):
     def health():
         return jsonify({'status': 'healthy', 'service': 'FoodBridge API'}), 200
 
-    # Create tables on first run + seed admin if not exists
-    with app.app_context():
-        import models  # noqa: F401
-        db.create_all()
-
-        # Auto-seed admin user on first deploy (no shell needed)
-        try:
-            from models import User
-            import bcrypt as _bcrypt
-            if not User.query.filter_by(email='admin@foodbridge.com').first():
-                hashed = _bcrypt.hashpw(b'Admin@1234', _bcrypt.gensalt()).decode()
-                admin = User(
-                    name='FoodBridge Admin',
-                    email='admin@foodbridge.com',
-                    password=hashed,
-                    role='super_admin',
-                    organization='FoodBridge',
-                    verified=True,
-                    status='approved',
-                )
-                db.session.add(admin)
-                db.session.commit()
-        except Exception as e:
-            import logging
-            logging.warning(f'Admin seed skipped: {e}')
-
     return app
