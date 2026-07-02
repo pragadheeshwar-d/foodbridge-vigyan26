@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT run:app
+    startCommand: cd backend && gunicorn -w 2 --bind 0.0.0.0:$PORT run:app
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
@@ -32,9 +32,6 @@ services:
         sync: false
       - key: MAIL_DEFAULT_SENDER
         sync: false
-      - key: GOOGLE_MAPS_KEY
-        sync: false
-
 databases:
   - name: foodbridge-db
     plan: free
