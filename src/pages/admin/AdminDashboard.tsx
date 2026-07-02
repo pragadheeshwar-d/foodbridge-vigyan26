@@ -25,6 +25,27 @@ interface AdminUserRecord {
   createdAt?: Date
 }
 
+interface AdminDashboardStats {
+  total_users: number
+  total_donors: number
+  total_receivers: number
+  total_donations: number
+  total_pickups: number
+  completed_pickups: number
+  meals_saved: number
+  pending_approvals_users: number
+  pending_pickup_approvals: number
+  food_waste_prevented: number
+}
+
+interface AdminDashboardData {
+  stats: AdminDashboardStats
+  monthly_data: { month: string; donations: number; pickups: number }[]
+  top_donors: { name: string; meals: number }[]
+  recent_users: any[]
+  recent_donations: any[]
+}
+
 const navItems = [
   { label: 'Overview', path: '/admin', icon: () => <span> </span> },
 ]
@@ -33,9 +54,19 @@ export default function AdminDashboard() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [users, setUsers] = useState<AdminUserRecord[]>([])
+  const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      const res = await api.get('/dashboard/admin')
+      setDashboard(res.data)
+    } catch (err) {
+      console.error('Admin dashboard fetch failed', err)
+    }
+  }, [])
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -65,8 +96,9 @@ export default function AdminDashboard() {
   }, [filter])
 
   useEffect(() => {
+    fetchDashboard()
     fetchUsers()
-  }, [fetchUsers])
+  }, [fetchDashboard, fetchUsers])
 
   const handleApprove = async (id: string) => {
     setBusyId(id)
@@ -97,10 +129,26 @@ export default function AdminDashboard() {
   }
 
   const totals = {
-    pending: users.length,
-    donors: users.filter((u) => u.role === 'donor').length,
-    receivers: users.filter((u) => u.role === 'receiver').length,
+    pending: dashboard?.stats.pending_approvals_users ?? users.filter((u) => u.status === 'pending').length,
+    donors: dashboard?.stats.total_donors ?? users.filter((u) => u.role === 'donor').length,
+    receivers: dashboard?.stats.total_receivers ?? users.filter((u) => u.role === 'receiver').length,
   }
+
+  const topDonors = dashboard?.top_donors?.length
+    ? dashboard.top_donors
+    : [{ name: 'No donation data yet', meals: 0 }]
+
+  const cityData = dashboard?.recent_users?.length
+    ? Object.values(
+        dashboard.recent_users.reduce((acc: Record<string, { city: string; donations: number }>, u: any) => {
+          const raw = String(u.address || '').split(',').map((part: string) => part.trim()).filter(Boolean)
+          const city = raw[raw.length - 1] || raw[raw.length - 2] || u.organization || 'Unspecified'
+          acc[city] = acc[city] || { city, donations: 0 }
+          acc[city].donations += u.role === 'donor' ? 1 : 0
+          return acc
+        }, {})
+      )
+    : [{ city: 'No data', donations: 0 }]
 
   return (
     <DashboardLayout navItems={navItems} role="admin">
@@ -129,18 +177,17 @@ export default function AdminDashboard() {
         <StatCard title="Pending verifications" value={totals.pending} icon={CheckCircle2} color="text-amber-500" />
         <StatCard title="Donors onboarded" value={totals.donors} icon={Building2} />
         <StatCard title="Receivers onboarded" value={totals.receivers} icon={Building2} color="text-blue-500" />
+        <StatCard title="Total donations" value={dashboard?.stats.total_donations ?? 0} icon={Mail} />
+        <StatCard title="Completed pickups" value={dashboard?.stats.completed_pickups ?? 0} icon={Phone} />
+        <StatCard title="Meals saved" value={dashboard?.stats.meals_saved ?? 0} icon={CheckCircle2} color="text-green-600" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         <TopDonorsChart
-          data={[
-            { name: 'Top Donor A', meals: 0 },
-          ]}
+          data={topDonors}
         />
         <CityHeatmapChart
-          data={[
-            { city: 'Chennai', donations: 0 },
-          ]}
+          data={cityData as { city: string; donations: number }[]}
         />
       </div>
 
@@ -238,8 +285,8 @@ export default function AdminDashboard() {
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
         <PieDistributionChart
           data={[
-            { name: 'Donors', value: totals.donors || 1 },
-            { name: 'Receivers', value: totals.receivers || 1 },
+            { name: 'Donors', value: Math.max(1, totals.donors) },
+            { name: 'Receivers', value: Math.max(1, totals.receivers) },
           ]}
         />
       </div>
