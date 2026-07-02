@@ -4,9 +4,7 @@ import { Upload, Clock, Image, X } from 'lucide-react'
 import { DashboardHeader } from '../../components/layout/DashboardLayout'
 import { Input, Select, Textarea } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
-import { MapMock } from '../../components/maps/MapMock'
 import { DonorShell } from '../../components/donor/DonorShell'
-const TN_REGION = { lat: 13.0827, lng: 80.2707 }
 import { useToast } from '../../context/ToastContext'
 
 import { useAuth } from '../../context/AuthContext'
@@ -196,13 +194,9 @@ export default function AddDonationPage() {
 
           <Input label="Pickup Address" placeholder="ITC Grand Chola, 63 Mount Road..." required value={pickupAddress} onChange={(e) => setPickupAddress(e.target.value)} />
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Pickup Location  Google Maps</label>
-            <MapMock
-              height="h-48"
-              markers={[{ lat: TN_REGION.lat, lng: TN_REGION.lng, label: pickupAddress || 'Pickup location', type: 'donor' }]}
-            />
-          </div>
+          <p className="text-sm text-text-secondary">
+            Provide a complete pickup address and landmark so the team can confirm the location before collection.
+          </p>
 
           <div className="grid md:grid-cols-2 gap-6">
             <Input label="Preferred Pickup Time" type="time" value={preferredPickupTime} onChange={(e) => setPreferredPickupTime(e.target.value)} />
