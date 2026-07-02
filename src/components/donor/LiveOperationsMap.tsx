@@ -1,5 +1,4 @@
-import { MapPin, Navigation, Clock, AlertTriangle } from 'lucide-react'
-import { MapMock } from '../maps/MapMock'
+import { Clock, AlertTriangle, ShieldCheck, Truck } from 'lucide-react'
 const liveMapData = {
   restaurant: { id: 'r1', lat: 13.0827, lng: 80.2707, name: 'ITC Grand Chola' },
   pickup: { id: 'p1', lat: 13.0827, lng: 80.2707, status: 'assigned' },
@@ -13,19 +12,13 @@ const liveMapData = {
 }
 
 export function LiveOperationsMap() {
-  const markers = [
-    { ...liveMapData.restaurant, type: 'donor' as const, label: liveMapData.restaurant.name },
-    ...liveMapData.ngos.map(ngo => ({ ...ngo, type: 'receiver' as const, label: ngo.name })),
-    { ...liveMapData.pickup, lat: liveMapData.pickup.lat, lng: liveMapData.pickup.lng, label: 'Pickup Route' },
-  ]
-
   return (
     <div className="glass-card p-6">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
         <div>
-          <h3 className="text-lg font-bold text-text dark:text-white">Live Operations Map</h3>
+          <h3 className="text-lg font-bold text-text dark:text-white">Live Operations Summary</h3>
           <p className="text-sm text-text-secondary mt-1">
-          Restaurant location, nearby NGOs, and real-time ETA.
+            Current activity, verification status, and delivery timing at a glance.
           </p>
         </div>
         <div className="flex flex-wrap gap-3 text-xs">
@@ -37,19 +30,37 @@ export function LiveOperationsMap() {
           </span>
         </div>
       </div>
-      <MapMock height="h-72" showRoute markers={markers} />
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-primary/5 to-white dark:from-primary/10 dark:to-gray-900 p-6">
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="rounded-xl bg-white/80 dark:bg-gray-950/60 border border-white/70 dark:border-gray-800 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Activity</p>
+            <p className="font-semibold mt-1">Active</p>
+            <p className="text-sm text-text-secondary mt-1">Operations are processing normally</p>
+          </div>
+          <div className="rounded-xl bg-white/80 dark:bg-gray-950/60 border border-white/70 dark:border-gray-800 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Verification</p>
+            <p className="font-semibold mt-1">Completed</p>
+            <p className="text-sm text-text-secondary mt-1">Pickup records are verified</p>
+          </div>
+          <div className="rounded-xl bg-white/80 dark:bg-gray-950/60 border border-white/70 dark:border-gray-800 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Timing</p>
+            <p className="font-semibold mt-1">{liveMapData.eta}</p>
+            <p className="text-sm text-text-secondary mt-1">Estimated handoff window</p>
+          </div>
+        </div>
+      </div>
       <div className="grid sm:grid-cols-3 gap-4 mt-4">
         <div className="flex items-center gap-2 text-sm">
-          <MapPin className="w-4 h-4 text-primary" />
-          <span className="text-text-secondary">Distance: <strong className="text-text dark:text-white">{liveMapData.distance}</strong></span>
+          <ShieldCheck className="w-4 h-4 text-primary" />
+          <span className="text-text-secondary">Security: <strong className="text-text dark:text-white">Confirmed</strong></span>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <Navigation className="w-4 h-4 text-blue-500" />
-          <span className="text-text-secondary">NGO: <strong className="text-text dark:text-white">Robin Hood Army</strong></span>
+          <Truck className="w-4 h-4 text-blue-500" />
+          <span className="text-text-secondary">Dispatch: <strong className="text-text dark:text-white">Queued</strong></span>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <MapPin className="w-4 h-4 text-accent" />
-          <span className="text-text-secondary">NGO: <strong className="text-text dark:text-white">Akshaya Patra Foundation</strong></span>
+          <Clock className="w-4 h-4 text-accent" />
+          <span className="text-text-secondary">ETA: <strong className="text-text dark:text-white">{liveMapData.eta}</strong></span>
         </div>
       </div>
     </div>
