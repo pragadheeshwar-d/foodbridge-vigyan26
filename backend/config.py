@@ -39,6 +39,3 @@ class Config:
 
     # Frontend URL (used in email links)
     FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
-
-    # Google Maps
-    GOOGLE_MAPS_KEY = os.environ.get('GOOGLE_MAPS_KEY', '')
