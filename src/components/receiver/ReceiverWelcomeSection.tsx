@@ -56,11 +56,11 @@ export function ReceiverWelcomeSection() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center mb-6">
-          <p className="text-text-secondary leading-relaxed max-w-3xl">
+        <p className="text-text-secondary leading-relaxed max-w-3xl">
             Your organization ({user?.organization || 'Food Bridge NGO'}) has rescued{' '}
-            <strong className="text-text dark:text-white">{loading ? '...' : stats.totalMealsReceived} meals</strong> this month,
+            <strong className="text-text dark:text-white">{loading ? '...' : stats.mealsReceivedThisMonth} meals</strong> this month,
             helping communities across Chennai.
-          </p>
+        </p>
           <Link to="/receiver/donations">
             <Button variant="primary" icon={PackageSearch}>Find Food</Button>
           </Link>

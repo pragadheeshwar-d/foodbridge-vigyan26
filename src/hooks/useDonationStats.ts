@@ -12,6 +12,7 @@ export function useDonationStats() {
   const { user } = useAuth()
   const [stats, setStats] = useState({
     totalMeals: 0,
+    mealsDonatedThisMonth: 0,
     totalKg: 0,
     todayDonations: 0,
     pendingPickups: 0,
@@ -33,6 +34,7 @@ export function useDonationStats() {
       const s = res.data.stats
       setStats({
         totalMeals: s.meals_donated ?? 0,
+        mealsDonatedThisMonth: s.meals_donated_month ?? 0,
         totalKg: s.food_waste_prevented ?? 0,
         todayDonations: s.todays_donations ?? 0,
         pendingPickups: s.pending_pickups ?? 0,

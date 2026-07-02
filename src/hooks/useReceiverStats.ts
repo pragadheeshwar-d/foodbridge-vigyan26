@@ -11,6 +11,7 @@ export interface ReceiverStats {
   activeRequests: number
   todayPickups: number
   totalMealsReceived: number
+  mealsReceivedThisMonth: number
   totalKgPrevented: number
   co2Reduced: number
   totalPickups: number
@@ -53,6 +54,7 @@ const EMPTY_STATS: ReceiverStats = {
   activeRequests: 0,
   todayPickups: 0,
   totalMealsReceived: 0,
+  mealsReceivedThisMonth: 0,
   totalKgPrevented: 0,
   co2Reduced: 0,
   totalPickups: 0,
@@ -75,6 +77,7 @@ export function useReceiverStats() {
         activeRequests: s.active_requests ?? 0,
         todayPickups: s.todays_pickups ?? 0,
         totalMealsReceived: s.meals_received ?? 0,
+        mealsReceivedThisMonth: s.meals_received_month ?? 0,
         totalKgPrevented: s.food_waste_prevented ?? 0,
         co2Reduced: s.carbon_reduced ?? 0,
         totalPickups: s.total_pickups ?? 0,

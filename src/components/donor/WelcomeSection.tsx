@@ -55,7 +55,7 @@ export function WelcomeSection() {
 
         <p className="text-text-secondary leading-relaxed max-w-3xl">
           Your organization ({user?.organization || 'Food Bridge Partner'}) has donated{' '}
-          <strong className="text-text dark:text-white">{stats.totalMeals} meals</strong> this month,
+          <strong className="text-text dark:text-white">{stats.mealsDonatedThisMonth} meals</strong> this month,
           helping <strong className="text-text dark:text-white">NGOs</strong> across Chennai.
         </p>
 

@@ -116,6 +116,7 @@ def public_dashboard():
 def donor_dashboard():
     user_id = int(get_jwt_identity())
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    month_start, month_end = _month_range(0)
 
     # Today's donations
     todays_donations = Donation.query.filter(
@@ -135,6 +136,10 @@ def donor_dashboard():
 
     # Completed donations
     completed_donations = [d for d in donor_donations if d.status == 'Completed']
+    completed_donations_month = [
+        d for d in completed_donations
+        if d.created_at and month_start <= d.created_at <= month_end
+    ]
     expiring_soon = Donation.query.filter(
         Donation.donor_id == user_id,
         Donation.status.in_(['Available', 'Requested', 'Approved']),
@@ -146,6 +151,10 @@ def donor_dashboard():
     meals_donated = sum(
         int(d.quantity_number * 2) if d.unit == 'kg' else int(d.quantity_number or 1)
         for d in completed_donations
+    )
+    meals_donated_month = sum(
+        int(d.quantity_number * 2) if d.unit == 'kg' else int(d.quantity_number or 1)
+        for d in completed_donations_month
     )
 
     # Food waste prevented (kg)
@@ -206,6 +215,7 @@ def donor_dashboard():
     return jsonify({
         'stats': {
             'todays_donations': todays_donations,
+            'meals_donated_month': meals_donated_month,
             'meals_donated': meals_donated,
             'pending_pickups': pending_pickups,
             'food_waste_prevented': round(food_waste_prevented, 1),
@@ -229,6 +239,7 @@ def receiver_dashboard():
     user_id = int(get_jwt_identity())
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     now = datetime.utcnow()
+    month_start, month_end = _month_range(0)
 
     available_donations = Donation.query.filter(
         Donation.status == 'Available',
@@ -253,20 +264,36 @@ def receiver_dashboard():
         PickupRequest.receiver_id == user_id,
         PickupRequest.status == 'Completed'
     ).all()
+    completed_prs_month = [
+        pr for pr in completed_prs
+        if pr.completed_at and month_start <= pr.completed_at <= month_end
+    ]
 
     donation_ids_completed = [pr.donation_id for pr in completed_prs]
     completed_donations = Donation.query.filter(Donation.id.in_(donation_ids_completed)).all() \
         if donation_ids_completed else []
+    donation_ids_completed_month = [pr.donation_id for pr in completed_prs_month]
+    completed_donations_month = Donation.query.filter(Donation.id.in_(donation_ids_completed_month)).all() \
+        if donation_ids_completed_month else []
 
     meals_received = sum(
         int(d.quantity_number * 2) if d.unit == 'kg' else int(d.quantity_number or 1)
         for d in completed_donations
     )
+    meals_received_month = sum(
+        int(d.quantity_number * 2) if d.unit == 'kg' else int(d.quantity_number or 1)
+        for d in completed_donations_month
+    )
     food_waste_prevented = sum(
         (d.quantity_number or _parse_qty(d.quantity)) * (0.5 if d.unit == 'meals' else 1)
         for d in completed_donations
     )
+    food_waste_prevented_month = sum(
+        (d.quantity_number or _parse_qty(d.quantity)) * (0.5 if d.unit == 'meals' else 1)
+        for d in completed_donations_month
+    )
     carbon_reduced = round(food_waste_prevented * 2.5, 1)
+    carbon_reduced_month = round(food_waste_prevented_month * 2.5, 1)
 
     # Monthly pickups
     monthly_data = []
@@ -309,9 +336,12 @@ def receiver_dashboard():
             'available_donations': available_donations,
             'active_requests': active_requests,
             'todays_pickups': todays_pickups,
+            'meals_received_month': meals_received_month,
             'meals_received': meals_received,
             'food_waste_prevented': round(food_waste_prevented, 1),
+            'food_waste_prevented_month': round(food_waste_prevented_month, 1),
             'carbon_reduced': carbon_reduced,
+            'carbon_reduced_month': carbon_reduced_month,
             'total_pickups': len(completed_prs),
             'acceptance_rate': acceptance_rate,
         },
