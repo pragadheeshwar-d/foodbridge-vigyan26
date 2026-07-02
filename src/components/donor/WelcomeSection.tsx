@@ -12,11 +12,13 @@ function formatLiveDateTime() {
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useDonationStats } from '../../hooks/useDonationStats'
+import { usePublicStats } from '../../hooks/usePublicStats'
 
 export function WelcomeSection() {
   const [dateTime, setDateTime] = useState(formatLiveDateTime())
   const { user } = useAuth()
   const { stats } = useDonationStats()
+  const { stats: publicStats } = usePublicStats()
 
   useEffect(() => {
     const t = setInterval(() => setDateTime(formatLiveDateTime()), 60000)
@@ -60,6 +62,23 @@ export function WelcomeSection() {
         </p>
 
         <div className="grid sm:grid-cols-3 gap-4 mt-6">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 sm:col-span-3">
+            <p className="text-xs uppercase tracking-wide text-text-secondary">Platform snapshot</p>
+            <div className="grid sm:grid-cols-3 gap-4 mt-3">
+              <div>
+                <p className="text-2xl font-bold text-primary">{publicStats.mealsSaved.toLocaleString()}</p>
+                <p className="text-xs text-text-secondary mt-1">Meals saved this month</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-accent">{publicStats.successfulDeliveries}</p>
+                <p className="text-xs text-text-secondary mt-1">Successful deliveries</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-primary">{publicStats.activeDonations}</p>
+                <p className="text-xs text-text-secondary mt-1">Active donations</p>
+              </div>
+            </div>
+          </div>
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
             <p className="text-2xl font-bold text-primary">{stats.pendingPickups}</p>
             <p className="text-xs text-text-secondary mt-1">Pending Pickups</p>
