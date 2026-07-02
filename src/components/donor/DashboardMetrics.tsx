@@ -1,6 +1,6 @@
 import { type LucideIcon } from 'lucide-react'
 import {
-  UtensilsCrossed, Package, Truck, Leaf, Award, TrendingUp, Trophy,
+  UtensilsCrossed, Package, Truck, Leaf, TrendingUp, Trophy,
 } from 'lucide-react'
 import { useDonationStats } from '../../hooks/useDonationStats'
 
@@ -38,11 +38,10 @@ function getCommunityRank(totalDonationEvents: number, totalMeals: number) {
   return { value: 'New', subtitle: 'Start your first donation' }
 }
 
-function getImpactScore(stats: { totalMeals: number; pendingPickups: number; certificates: number; totalDonationEvents: number }) {
+function getImpactScore(stats: { totalMeals: number; pendingPickups: number; totalDonationEvents: number }) {
   const score =
     Math.min(40, Math.round(stats.totalMeals / 10)) +
     Math.min(25, stats.totalDonationEvents * 2) +
-    Math.min(20, stats.certificates * 5) +
     Math.max(0, 15 - stats.pendingPickups * 3)
   return Math.max(0, Math.min(100, score))
 }
@@ -93,12 +92,6 @@ export function DashboardMetrics() {
         subtitle={communityRank.subtitle}
         icon={Trophy}
         accent
-      />
-      <MetricCard
-        title="Certificates Earned"
-        value={stats.totalDonationEvents > 10 ? 1 : 0}
-        subtitle="Download from Certificates page"
-        icon={Award}
       />
     </div>
   )

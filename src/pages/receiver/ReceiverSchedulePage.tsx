@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MapPin, QrCode, CheckCircle, Navigation, Loader2 } from 'lucide-react'
+import { MapPin, CheckCircle, Loader2 } from 'lucide-react'
 import { ReceiverShell } from '../../components/receiver/ReceiverShell'
 import { Button } from '../../components/ui/Button'
 import { useReceiverRequests } from '../../hooks/useReceiverStats'
@@ -40,7 +40,6 @@ export default function ReceiverSchedulePage() {
         </div>
       ) : scheduled.length === 0 ? (
         <div className="glass-card p-16 text-center text-text-secondary">
-          <QrCode className="w-14 h-14 mx-auto mb-4 opacity-20" />
           <p className="font-semibold text-lg">No pickups scheduled</p>
           <p className="text-sm mt-1">Once your requests are approved, they will appear here.</p>
         </div>
@@ -78,15 +77,9 @@ export default function ReceiverSchedulePage() {
               </div>
 
               <div className="mt-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Button variant="secondary" className="w-full flex justify-center" icon={Navigation}>
-                  Maps
-                </Button>
-                <Button variant="secondary" className="w-full flex justify-center" icon={QrCode}>
-                  QR Verify
-                </Button>
                 <Button
                   variant="primary"
-                  className="w-full flex justify-center"
+                  className="w-full flex justify-center sm:col-span-3"
                   icon={CheckCircle}
                   loading={busyId === pickup.id}
                   onClick={() => handleCollected(pickup.id, pickup.donationId)}

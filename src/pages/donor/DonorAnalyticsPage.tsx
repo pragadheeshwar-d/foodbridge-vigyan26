@@ -4,7 +4,6 @@ import {
   DonationTrendChart, MonthlyAnalyticsChart,
   PieDistributionChart, CircularProgress,
 } from '../../components/charts/Charts'
-import { LiveOperationsMap } from '../../components/donor/LiveOperationsMap'
 import { useAuth } from '../../context/AuthContext'
 import { useDonationStats, useDonorDonations, useDonorPickups } from '../../hooks/useDonationStats'
 import { Loader2 } from 'lucide-react'
@@ -149,17 +148,12 @@ export default function DonorAnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <div className="glass-card p-6">
-          <h3 className="text-lg font-bold mb-2">Pickup Efficiency</h3>
-          <p className="text-sm text-text-secondary mb-6">Success rate and performance for {user?.organization || 'your location'}.</p>
-          <div className="grid grid-cols-2 gap-4">
-            <CircularProgress value={loading ? 0 : successRate} label="Pickup Success" />
-            <CircularProgress value={loading ? 0 : (successRate > 0 ? 85 : 0)} label="On-Time Rate" color="#F9A825" />
-          </div>
-        </div>
-        <div className="lg:col-span-2">
-          <LiveOperationsMap />
+      <div className="glass-card p-6 mb-8">
+        <h3 className="text-lg font-bold mb-2">Pickup Efficiency</h3>
+        <p className="text-sm text-text-secondary mb-6">Success rate and performance for {user?.organization || 'your location'}.</p>
+        <div className="grid grid-cols-2 gap-4 max-w-xl">
+          <CircularProgress value={loading ? 0 : successRate} label="Pickup Success" />
+          <CircularProgress value={loading ? 0 : (successRate > 0 ? 85 : 0)} label="On-Time Rate" color="#F9A825" />
         </div>
       </div>
     </DonorShell>

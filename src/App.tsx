@@ -6,7 +6,6 @@ import AddDonationPage from './pages/donor/AddDonationPage'
 import DonorDonationsPage from './pages/donor/DonorDonationsPage'
 import DonorPickupsPage from './pages/donor/DonorPickupsPage'
 import DonorAnalyticsPage from './pages/donor/DonorAnalyticsPage'
-import DonorCertificatesPage from './pages/donor/DonorCertificatesPage'
 import DonorProfilePage from './pages/donor/DonorProfilePage'
 import DonorMessagesPage from './pages/donor/DonorMessagesPage'
 import DonorHistoryPage from './pages/donor/DonorHistoryPage'
@@ -122,13 +121,7 @@ export default function App() {
         />
         <Route
           path="/donor/certificates"
-          element={
-            <PageWrapper>
-              <ProtectedRoute roles={['donor', 'admin', 'super_admin']}>
-                <DonorCertificatesPage />
-              </ProtectedRoute>
-            </PageWrapper>
-          }
+          element={<Navigate to="/donor" replace />}
         />
         <Route
           path="/donor/profile"

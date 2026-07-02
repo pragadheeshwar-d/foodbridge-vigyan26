@@ -9,6 +9,7 @@ type Tab = 'pending' | 'accepted' | 'completed' | 'declined'
 
 export default function ReceiverRequestsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('pending')
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null)
   const { requests, loading } = useReceiverRequests()
 
   const filtered = requests.filter(r => r.status === activeTab)
@@ -80,7 +81,9 @@ export default function ReceiverRequestsPage() {
                       <StatusBadge status={req.status} />
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="sm">View Details</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedRequest(req)}>
+                        View Details
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -95,6 +98,63 @@ export default function ReceiverRequestsPage() {
           </table>
         )}
       </div>
+
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-black/50"
+            aria-label="Close request details"
+            onClick={() => setSelectedRequest(null)}
+          />
+          <div className="relative z-10 w-full max-w-2xl glass-card p-6 md:p-8">
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold">Request Details</h2>
+                <p className="text-text-secondary mt-1">Pickup request summary for {selectedRequest.donorName}.</p>
+              </div>
+              <button
+                onClick={() => setSelectedRequest(null)}
+                className="text-sm text-text-secondary hover:text-text"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Donor / Restaurant</p>
+                <p className="font-semibold mt-1">{selectedRequest.donorName}</p>
+              </div>
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Food</p>
+                <p className="font-semibold mt-1">{selectedRequest.foodType}</p>
+              </div>
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Quantity</p>
+                <p className="font-semibold mt-1">{selectedRequest.quantity} {selectedRequest.unit}</p>
+              </div>
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Pickup Time</p>
+                <p className="font-semibold mt-1">{selectedRequest.pickupTime}</p>
+              </div>
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4 sm:col-span-2">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Pickup Address</p>
+                <p className="font-semibold mt-1">{selectedRequest.pickupAddress || 'Not provided'}</p>
+              </div>
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Status</p>
+                <div className="mt-1 inline-flex">
+                  <StatusBadge status={selectedRequest.status} />
+                </div>
+              </div>
+              <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                <p className="text-text-secondary text-xs uppercase tracking-wide">Request ID</p>
+                <p className="font-mono font-semibold mt-1">{String(selectedRequest.id)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ReceiverShell>
   )
 }
