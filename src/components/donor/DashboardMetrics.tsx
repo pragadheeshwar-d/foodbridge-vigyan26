@@ -27,8 +27,20 @@ function MetricCard({ title, value, subtitle, icon: Icon, accent }: MetricCardPr
   )
 }
 
+function getCommunityRank(totalDonationEvents: number, totalMeals: number) {
+  const score = totalDonationEvents * 2 + Math.floor(totalMeals / 25)
+
+  if (score >= 120) return { value: 'Top 1%', subtitle: 'Elite community impact' }
+  if (score >= 80) return { value: 'Top 3%', subtitle: 'Among the strongest donors' }
+  if (score >= 50) return { value: 'Top 5%', subtitle: 'High-impact donor tier' }
+  if (score >= 25) return { value: 'Top 10%', subtitle: 'Growing donor momentum' }
+  if (score > 0) return { value: 'Rising', subtitle: 'Building community impact' }
+  return { value: 'New', subtitle: 'Start your first donation' }
+}
+
 export function DashboardMetrics() {
   const { stats, loading } = useDonationStats()
+  const communityRank = getCommunityRank(stats.totalDonationEvents, stats.totalMeals)
 
   if (loading) {
     return <div className="animate-pulse h-32 bg-gray-100 dark:bg-gray-800 rounded-xl w-full mb-8" />
@@ -68,8 +80,8 @@ export function DashboardMetrics() {
       />
       <MetricCard
         title="Community Rank"
-        value="Top 5"
-        subtitle="Among Chennai South Donors"
+        value={communityRank.value}
+        subtitle={communityRank.subtitle}
         icon={Trophy}
         accent
       />
