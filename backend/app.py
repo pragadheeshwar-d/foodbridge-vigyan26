@@ -30,7 +30,7 @@ def create_app(config_class=Config):
     mail.init_app(app)
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": "*"}},
+        resources={r"/api/*": {"origins": allowed_origins}},
         supports_credentials=True
     )
     socketio.init_app(
