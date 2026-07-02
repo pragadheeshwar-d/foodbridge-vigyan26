@@ -61,7 +61,7 @@ export default function DonorPickupsPage() {
               <div>
                 <p className="font-semibold">{p.food}</p>
                 <p className="text-sm text-text-secondary mt-1">{p.ngo}  Pickup at {p.time}</p>
-                <p className="text-xs font-mono text-text-secondary mt-1">{p.id.slice(0, 8)}</p>
+                <p className="text-xs font-mono text-text-secondary mt-1">{String(p.id).slice(0, 8)}</p>
               </div>
               <div className="flex items-center gap-3">
                 <StatusBadge status={p.status} />

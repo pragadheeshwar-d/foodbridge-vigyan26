@@ -82,8 +82,8 @@ export function useDonorDonations() {
         params: { donor_id: user.id },
       })
       const items = res.data.map((d: any) => ({
-        id: String(d.id),
         ...d,
+        id: String(d.id),
         createdAt: d.created_at ? new Date(d.created_at) : new Date(),
         expiryTimeDate: d.expiry_time ? new Date(d.expiry_time) : null,
         food: d.food_name || d.food_type || 'Food',

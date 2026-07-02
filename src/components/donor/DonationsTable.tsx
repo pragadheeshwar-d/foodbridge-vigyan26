@@ -56,7 +56,7 @@ export function DonationsTable({ compact = false, limit }: DonationsTableProps) 
             <tbody>
               {rows.map((d) => (
                 <tr key={d.id} className="border-b border-gray-50 dark:border-gray-800/50 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                  <td className="py-3 font-mono text-xs">{d.id.slice(0, 8)}</td>
+                  <td className="py-3 font-mono text-xs">{String(d.id).slice(0, 8)}</td>
                   <td className="py-3">
                     <div className="flex items-center gap-3">
                       <img src={d.image} alt={d.food} className="w-10 h-10 rounded-lg object-cover" />
