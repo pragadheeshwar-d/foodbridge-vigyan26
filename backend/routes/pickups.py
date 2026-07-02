@@ -3,13 +3,21 @@ Pickup request routes: create, list, approve/reject/complete.
 """
 import uuid
 from datetime import datetime
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db, socketio
 from models import User, Donation, PickupRequest, Notification, Certificate
 from services.qr_service import generate_qr_token
 
 pickups_bp = Blueprint('pickups', __name__)
+
+
+def _safe_emit(event, payload, **kwargs):
+    """Emit Socket.IO events without failing the HTTP request if realtime is unavailable."""
+    try:
+        socketio.emit(event, payload, **kwargs)
+    except Exception as exc:
+        current_app.logger.warning("Socket.IO emit failed for %s: %s", event, exc)
 
 
 def _create_notification(user_id, title, message, notif_type, link=None):
@@ -20,7 +28,7 @@ def _create_notification(user_id, title, message, notif_type, link=None):
     )
     db.session.add(n)
     db.session.flush()
-    socketio.emit('notification', n.to_dict(), room=f'user_{user_id}')
+    _safe_emit('notification', n.to_dict(), room=f'user_{user_id}')
     return n
 
 
@@ -97,7 +105,7 @@ def create_pickup_request():
         '/donor/pickups'
     )
 
-    socketio.emit('pickup_requested', {
+    _safe_emit('pickup_requested', {
         'pickup_request': pr.to_dict(),
         'donation': donation.to_dict(),
     }, room=f'user_{donation.donor_id}')
@@ -154,7 +162,7 @@ def update_pickup_request(id):
                 'pickup_rejected',
                 '/receiver/requests'
             )
-            socketio.emit('pickup_status_changed', {
+            _safe_emit('pickup_status_changed', {
                 'pickup_request': other.to_dict(),
                 'donation': donation.to_dict(),
             }, room=f'user_{other.receiver_id}')
@@ -166,7 +174,7 @@ def update_pickup_request(id):
             'pickup_approved',
             '/receiver/schedule'
         )
-        socketio.emit('pickup_status_changed', {
+        _safe_emit('pickup_status_changed', {
             'pickup_request': pr.to_dict(),
             'donation': donation.to_dict(),
         }, room=f'user_{pr.receiver_id}')
@@ -190,7 +198,7 @@ def update_pickup_request(id):
             'pickup_rejected',
             '/receiver/requests'
         )
-        socketio.emit('pickup_status_changed', {
+        _safe_emit('pickup_status_changed', {
             'pickup_request': pr.to_dict(),
             'donation': donation.to_dict(),
         }, room=f'user_{pr.receiver_id}')
@@ -232,11 +240,11 @@ def update_pickup_request(id):
             '/donor/certificates'
         )
 
-        socketio.emit('pickup_status_changed', {
+        _safe_emit('pickup_status_changed', {
             'pickup_request': pr.to_dict(),
             'donation': donation.to_dict(),
         })
-        socketio.emit('analytics_updated', {}, namespace='/')
+        _safe_emit('analytics_updated', {}, namespace='/')
 
     db.session.commit()
     result = pr.to_dict()
@@ -321,7 +329,7 @@ def verify_qr():
 
     db.session.commit()
 
-    socketio.emit('pickup_status_changed', {
+    _safe_emit('pickup_status_changed', {
         'pickup_request': pr.to_dict(),
         'donation': donation.to_dict(),
     })

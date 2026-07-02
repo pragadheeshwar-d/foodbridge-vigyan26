@@ -24,11 +24,13 @@ export default function ReceiverDonationsPage() {
   const [quantity, setQuantity] = useState<QuantityFilter>('all')
   const [expiry, setExpiry] = useState<ExpiryFilter>('all')
   const [requestingId, setRequestingId] = useState<string | null>(null)
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set())
 
   const { donations, loading } = useAvailableDonations()
 
   const filteredFood = useMemo(() => {
     return donations.filter((f) => {
+      if (requestedIds.has(f.id)) return false
       if (foodType !== 'all' && f.type !== foodType) return false
       if (
         search &&
@@ -48,7 +50,7 @@ export default function ReceiverDonationsPage() {
       void distance
       return true
     })
-  }, [donations, search, foodType, distance, quantity, expiry])
+  }, [donations, requestedIds, search, foodType, distance, quantity, expiry])
 
   const handleRequest = async (donation: AvailableDonation) => {
     if (!user) {
@@ -74,6 +76,11 @@ export default function ReceiverDonationsPage() {
         unit: 'meals',
         pickupAddress: donation.pickupTime,
         pickupTime: null,
+      })
+      setRequestedIds((prev) => {
+        const next = new Set(prev)
+        next.add(donation.id)
+        return next
       })
       toast(`Pickup request sent for ${donation.food}.`, 'success')
     } catch (err: any) {

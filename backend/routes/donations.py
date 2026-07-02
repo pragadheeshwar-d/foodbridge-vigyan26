@@ -2,13 +2,21 @@
 Donation management routes.
 """
 from datetime import datetime
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from extensions import db, socketio
 from models import User, Donation, Notification
 from services.expiry_predictor import predict_expiry
 
 donations_bp = Blueprint('donations', __name__)
+
+
+def _safe_emit(event, payload, **kwargs):
+    """Emit Socket.IO events without breaking donation creation if realtime fails."""
+    try:
+        socketio.emit(event, payload, **kwargs)
+    except Exception as exc:
+        current_app.logger.warning("Socket.IO emit failed for %s: %s", event, exc)
 
 
 def _notify_receivers(donation: Donation):
@@ -26,10 +34,10 @@ def _notify_receivers(donation: Donation):
     db.session.flush()
 
     # Emit to all receivers
-    socketio.emit('new_donation', donation.to_dict(), namespace='/')
+    _safe_emit('new_donation', donation.to_dict(), namespace='/')
     # Notify each receiver's private room
     for r in receivers:
-        socketio.emit('notification', {
+        _safe_emit('notification', {
             'title': 'New Donation Available',
             'message': f'{donation.donor.organization or donation.donor.name} listed {donation.quantity} of {donation.food_name}.',
             'type': 'new_donation',
