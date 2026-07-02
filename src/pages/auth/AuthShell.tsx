@@ -56,7 +56,7 @@ export function AuthShell({
               {[
                 'Secure JWT sessions and role-based access',
                 'Donation tracking with QR verification',
-                'Google Maps-ready pickup and routing flows',
+                'Simple address capture with no map integration',
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 rounded-2xl bg-white/10 backdrop-blur px-4 py-3 border border-white/10">
                   <ShieldCheck className="w-5 h-5 text-emerald-300" />
