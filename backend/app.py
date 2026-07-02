@@ -19,6 +19,8 @@ def create_app(config_class=Config):
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
+        "https://food-bridge-vigyan-26.vercel.app",
+        "https://food-bridge-vigyan-26-d624vid0f.vercel.app",
     ]
     frontend_url = os.environ.get('FRONTEND_URL', '')
     if frontend_url:
