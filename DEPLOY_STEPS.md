@@ -30,11 +30,10 @@ Important backend env vars:
 - `MAIL_USERNAME`
 - `MAIL_PASSWORD`
 - `MAIL_DEFAULT_SENDER`
-- `GOOGLE_MAPS_KEY` if used
 
 The backend service:
 - Build command: `cd backend && pip install -r requirements.txt`
-- Start command: `cd backend && gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT run:app`
+- Start command: `cd backend && gunicorn -w 2 --bind 0.0.0.0:$PORT run:app`
 - Health check: `/api/health`
 
 After deploy, initialize the database from the Render shell:
