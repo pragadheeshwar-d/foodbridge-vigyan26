@@ -39,6 +39,7 @@ function getCommunityRank(totalDonationEvents: number, totalMeals: number) {
 }
 
 function getImpactScore(stats: { totalMeals: number; pendingPickups: number; totalDonationEvents: number }) {
+  if (stats.totalDonationEvents === 0) return 0
   const score =
     Math.min(40, Math.round(stats.totalMeals / 10)) +
     Math.min(25, stats.totalDonationEvents * 2) +
