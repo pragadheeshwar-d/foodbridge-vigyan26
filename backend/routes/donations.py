@@ -105,11 +105,16 @@ def create_donation():
         if not data.get(field):
             return jsonify({'message': f'{field} is required'}), 400
 
-    # Parse datetimes
+    # Parse datetimes — always return naive UTC datetime for MySQL compatibility
     def parse_dt(val):
         if not val:
             return None
-        return datetime.fromisoformat(str(val).replace('Z', '+00:00'))
+        dt = datetime.fromisoformat(str(val).replace('Z', '+00:00'))
+        # Strip timezone info (convert to naive UTC)
+        if dt.tzinfo is not None:
+            from datetime import timezone
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
 
     expiry_time = parse_dt(data.get('expiry_time'))
     pickup_time = parse_dt(data.get('pickup_time'))
